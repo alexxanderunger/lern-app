@@ -2,7 +2,7 @@
 // Strategie "Netz zuerst": Mit Internet kommt immer die neueste Version,
 // ohne Internet die zuletzt gespeicherte.
 
-const CACHE = 'lern-app-v2';
+const CACHE = 'lern-app-v3';
 const DATEIEN = [
   './',
   'index.html',
@@ -30,7 +30,9 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request)
+    // 'no-cache' fragt immer beim Server nach, statt den Zwischenspeicher des Browsers
+    // zu nutzen – sonst kämen Änderungen erst nach Minuten an.
+    fetch(e.request, { cache: 'no-cache' })
       .then((antwort) => {
         const kopie = antwort.clone();
         caches.open(CACHE).then((c) => c.put(e.request, kopie));
