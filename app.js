@@ -253,3 +253,7 @@ document.getElementById('gross-klein').addEventListener('click', () => {
 });
 
 zeigeBuchstabe();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}

@@ -30,7 +30,15 @@ powershell -ExecutionPolicy Bypass -File serve.ps1   # http://localhost:8123/
 
 In Claude Code startet die Vorschau über die Konfiguration `lern-app` in `.claude/launch.json`. Ein Doppelklick auf `index.html` funktioniert für die Nutzung ebenfalls; die Vorschau in Claude Code braucht aber den Server.
 
-Git ist installiert (`C:\Program Files\Git`), der Projektordner ist ein Repository mit dem Zweig `main`. Geplant ist die Veröffentlichung über GitHub Pages als installierbare Web-App (PWA) für das Tablet.
+Git ist installiert (`C:\Program Files\Git`), der Projektordner ist ein Repository mit dem Zweig `main`. In einer frisch gestarteten Shell fehlt Git unter Umständen im `PATH`; dann den vollen Pfad `C:\Program Files\Git\cmd\git.exe` verwenden.
+
+## Veröffentlichung
+
+Ziel ist GitHub Pages unter `https://alexxanderunger.github.io/lern-app/` (Repository `alexxanderunger/lern-app`, Zweig `main`). Die App liegt dort in einem Unterordner, deshalb im Code nur relative Pfade verwenden.
+
+Die App ist eine installierbare Web-App (PWA): `manifest.webmanifest` beschreibt Name und Symbol, `sw.js` speichert die Dateien für den Offline-Betrieb (Strategie „Netz zuerst"). Neue Dateien, die offline gebraucht werden, in die Liste `DATEIEN` in `sw.js` eintragen.
+
+Commits verwenden die anonyme Adresse `alexxanderunger@users.noreply.github.com`, nicht die private E-Mail des Nutzers.
 
 ## Aufbau
 
