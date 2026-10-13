@@ -1,0 +1,187 @@
+:root {
+  --hintergrund: #fff8e7;
+  --tafel: #ffffff;
+  --rand: #f2c14e;
+  --knopf: #4da3ff;
+  --knopf-text: #ffffff;
+  --gut: #4caf50;
+  --text: #333333;
+  --schrift: "Andika", "Comic Sans MS", "Century Gothic", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--hintergrund);
+  color: var(--text);
+  font-family: var(--schrift);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+main {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 12px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+}
+
+.bild {
+  font-size: 48px;
+}
+
+.wort {
+  font-size: 36px;
+}
+
+.tafel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--tafel);
+  border: 6px solid var(--rand);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.tafel canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Verhindert, dass der Finger beim Malen die Seite verschiebt. */
+#zeichnung {
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.tafel.wackeln {
+  animation: wackeln 0.4s;
+}
+
+.stern {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 200px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.2);
+}
+
+.stern.zeigen {
+  animation: stern 1.4s ease-out;
+}
+
+.balken {
+  width: 100%;
+  height: 18px;
+  background: #e8e0cc;
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+#fortschritt {
+  width: 0;
+  height: 100%;
+  background: var(--gut);
+  transition: width 0.3s;
+}
+
+.hinweis {
+  margin: 0;
+  min-height: 28px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.knoepfe {
+  display: flex;
+  gap: 16px;
+}
+
+.rund {
+  min-width: 72px;
+  height: 72px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 36px;
+  background: var(--knopf);
+  color: var(--knopf-text);
+  font-family: inherit;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.rund:active {
+  transform: scale(0.94);
+}
+
+.rund.blinken {
+  background: var(--gut);
+  animation: blinken 0.9s infinite;
+}
+
+.auswahl {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auswahl button {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--rand);
+  border-radius: 12px;
+  background: var(--tafel);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.auswahl button.geschafft {
+  background: #fff1b8;
+}
+
+.auswahl button.aktiv {
+  border-color: var(--knopf);
+  background: var(--knopf);
+  color: var(--knopf-text);
+}
+
+@keyframes stern {
+  0% { opacity: 0; transform: scale(0.2) rotate(-30deg); }
+  30% { opacity: 1; transform: scale(1.1) rotate(10deg); }
+  70% { opacity: 1; transform: scale(1) rotate(0); }
+  100% { opacity: 0; transform: scale(1.3); }
+}
+
+@keyframes wackeln {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+@keyframes blinken {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}

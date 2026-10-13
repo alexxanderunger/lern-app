@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Buchstaben schreiben</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header>
+      <span id="bild" class="bild" aria-hidden="true"></span>
+      <span id="wort" class="wort"></span>
+      <button id="vorlesen" class="rund" aria-label="Vorlesen">🔊</button>
+    </header>
+
+    <div id="tafel" class="tafel">
+      <canvas id="vorlage" width="600" height="600"></canvas>
+      <canvas id="zeichnung" width="600" height="600"></canvas>
+      <div id="stern" class="stern" aria-hidden="true">⭐</div>
+    </div>
+
+    <div class="balken" aria-hidden="true"><div id="fortschritt"></div></div>
+    <p id="hinweis" class="hinweis" role="status"></p>
+
+    <nav class="knoepfe">
+      <button id="zurueck" class="rund" aria-label="Vorheriger Buchstabe">◀</button>
+      <button id="loeschen" class="rund" aria-label="Nochmal von vorn">🧽</button>
+      <button id="gross-klein" class="rund" aria-label="Groß oder klein">A a</button>
+      <button id="weiter" class="rund" aria-label="Nächster Buchstabe">▶</button>
+    </nav>
+
+    <div id="auswahl" class="auswahl"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
