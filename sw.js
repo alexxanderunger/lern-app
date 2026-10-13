@@ -2,7 +2,7 @@
 // Strategie "Netz zuerst": Mit Internet kommt immer die neueste Version,
 // ohne Internet die zuletzt gespeicherte.
 
-const CACHE = 'lern-app-v1';
+const CACHE = 'lern-app-v2';
 const DATEIEN = [
   './',
   'index.html',
@@ -11,6 +11,7 @@ const DATEIEN = [
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',
+  'fonts/andika-latin-400.woff2',
 ];
 
 self.addEventListener('install', (e) => {

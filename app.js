@@ -1,5 +1,5 @@
 // Buchstaben nachspuren: Das Kind malt über einen grauen Buchstaben.
-// Geprüft wird per Pixelvergleich – wie viel vom Buchstaben ist übermalt
+// Geprüft wird per Pixelvergleich – ist jeder Teil des Buchstabens übermalt
 // und wie viel wurde daneben gemalt.
 
 const BUCHSTABEN = [
@@ -32,8 +32,11 @@ const BUCHSTABEN = [
 ];
 
 const GROESSE = 600;          // interne Auflösung der Zeichenfläche
-const STIFTBREITE = 44;
-const ZIEL_ABDECKUNG = 0.65;  // so viel vom Buchstaben muss übermalt sein
+const STIFTBREITE = 50;
+const FELD = 40;              // Kantenlänge der Prüffelder, in die der Buchstabe aufgeteilt wird
+const FELD_MIN_ANTEIL = 0.1;  // Felder mit weniger Buchstabenfläche zählen nicht mit
+const FELD_ZIEL = 0.5;        // so viel vom Buchstaben in einem Feld muss übermalt sein
+const FELDER_OFFEN_ERLAUBT = 1;
 const MAX_DANEBEN = 0.5;      // höchstens so viel der Farbe darf danebenliegen
 const SCHRIFT = '"Andika", "Comic Sans MS", "Century Gothic", sans-serif';
 const SPEICHER = 'buchstaben-geschafft';
@@ -52,8 +55,9 @@ const auswahl = document.getElementById('auswahl');
 
 let index = 0;
 let klein = false;
-let maske = null;       // true für jeden Pixel, der zum Buchstaben gehört
-let maskeGesamt = 0;
+let maske = null;       // 1 für jeden Pixel, der zum Buchstaben gehört
+let felder = null;      // Buchstabenpixel je Prüffeld
+const FELDER_PRO_ZEILE = Math.ceil(GROESSE / FELD);
 let malt = false;
 let fertig = false;
 let geschafft = ladeGeschafft();
@@ -118,13 +122,19 @@ function zeichneVorlage() {
 
   const daten = vctx.getImageData(0, 0, GROESSE, GROESSE).data;
   maske = new Uint8Array(GROESSE * GROESSE);
-  maskeGesamt = 0;
+  felder = new Uint32Array(FELDER_PRO_ZEILE * FELDER_PRO_ZEILE);
   for (let i = 0; i < maske.length; i++) {
     if (daten[i * 4 + 3] > 128) {
       maske[i] = 1;
-      maskeGesamt++;
+      felder[feldVon(i)]++;
     }
   }
+}
+
+function feldVon(pixel) {
+  const x = pixel % GROESSE;
+  const y = (pixel - x) / GROESSE;
+  return Math.floor(y / FELD) * FELDER_PRO_ZEILE + Math.floor(x / FELD);
 }
 
 function leereZeichnung() {
@@ -174,20 +184,33 @@ function position(ereignis) {
 
 function pruefe() {
   const daten = zctx.getImageData(0, 0, GROESSE, GROESSE).data;
+  const bemalt = new Uint32Array(felder.length);
   let drin = 0;
   let daneben = 0;
   for (let i = 0; i < maske.length; i++) {
     if (daten[i * 4 + 3] > 60) {
-      if (maske[i]) drin++;
-      else daneben++;
+      if (maske[i]) {
+        drin++;
+        bemalt[feldVon(i)]++;
+      } else {
+        daneben++;
+      }
     }
   }
-  const abdeckung = drin / maskeGesamt;
   const anteilDaneben = daneben / Math.max(1, drin + daneben);
 
-  fortschritt.style.width = `${Math.min(1, abdeckung / ZIEL_ABDECKUNG) * 100}%`;
+  // Jedes Feld des Buchstabens muss übermalt sein – so fällt auch ein kurzer fehlender Strich auf.
+  let gesamt = 0;
+  let erledigt = 0;
+  for (let f = 0; f < felder.length; f++) {
+    if (felder[f] < FELD * FELD * FELD_MIN_ANTEIL) continue;
+    gesamt++;
+    if (bemalt[f] >= felder[f] * FELD_ZIEL) erledigt++;
+  }
 
-  if (abdeckung < ZIEL_ABDECKUNG) return;
+  fortschritt.style.width = `${(erledigt / gesamt) * 100}%`;
+
+  if (gesamt - erledigt > FELDER_OFFEN_ERLAUBT) return;
 
   if (anteilDaneben > MAX_DANEBEN) {
     hinweis.textContent = 'Bleib auf dem Buchstaben! 🧽';
@@ -253,6 +276,12 @@ document.getElementById('gross-klein').addEventListener('click', () => {
 });
 
 zeigeBuchstabe();
+
+// Die Schulschrift lädt nach; sobald sie da ist, die Vorlage damit neu zeichnen.
+// Ein Canvas merkt sonst nicht, dass sich die Schrift geändert hat.
+if (document.fonts) {
+  document.fonts.load(`400px ${SCHRIFT}`).then(zeichneVorlage);
+}
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
