@@ -12,6 +12,7 @@
 </head>
 <body>
   <main>
+    <button id="zahnrad" class="zahnrad" aria-label="Einstellungen">⚙️</button>
     <header>
       <span id="bild" class="bild" aria-hidden="true"></span>
       <span id="wort" class="wort"></span>
@@ -24,6 +25,7 @@
       <div id="stern" class="stern" aria-hidden="true">⭐</div>
     </div>
 
+    <div id="sterne" class="sterne" aria-hidden="true"></div>
     <div class="balken" aria-hidden="true"><div id="fortschritt"></div></div>
     <p id="hinweis" class="hinweis" role="status"></p>
 
@@ -36,6 +38,14 @@
 
     <div id="auswahl" class="auswahl"></div>
   </main>
+
+  <dialog id="einstellungen" class="einstellungen">
+    <h2>Schrift</h2>
+    <div id="wahl-schrift" class="wahl"></div>
+    <h2>Größe</h2>
+    <div id="wahl-groesse" class="wahl"></div>
+    <button id="einstellungen-zu" class="rund">Fertig</button>
+  </dialog>
 
   <script src="app.js"></script>
 </body>
