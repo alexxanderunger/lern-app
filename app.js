@@ -33,11 +33,12 @@ const BUCHSTABEN = [
 
 const GROESSE = 600;          // interne Auflösung der Zeichenfläche
 const STIFTBREITE = 50;
-const FELD = 40;              // Kantenlänge der Prüffelder, in die der Buchstabe aufgeteilt wird
-const FELD_MIN_ANTEIL = 0.1;  // Felder mit weniger Buchstabenfläche zählen nicht mit
-const FELD_ZIEL = 0.5;        // so viel vom Buchstaben in einem Feld muss übermalt sein
+const KERN_RAND = 0.025;      // so viel (Anteil der Schriftgröße) wird ringsum vom Buchstaben abgezogen – übrig bleibt die Mittellinie
+const FELD = 24;              // Kantenlänge der Prüffelder, in die die Mittellinie aufgeteilt wird
+const FELD_MIN_ANTEIL = 0.05; // Felder mit weniger Mittellinie zählen nicht mit
+const FELD_ZIEL = 0.35;       // so viel von der Mittellinie in einem Feld muss übermalt sein
 const FELDER_OFFEN_ERLAUBT = 1;
-const MAX_DANEBEN = 0.5;      // höchstens so viel der Farbe darf danebenliegen
+const MAX_DANEBEN = 0.6;      // höchstens so viel der Farbe darf neben dem Buchstaben liegen
 const SCHRIFT = '"Andika", "Comic Sans MS", "Century Gothic", sans-serif';
 const SPEICHER = 'buchstaben-geschafft';
 
@@ -56,7 +57,11 @@ const auswahl = document.getElementById('auswahl');
 let index = 0;
 let klein = false;
 let maske = null;       // 1 für jeden Pixel, der zum Buchstaben gehört
-let felder = null;      // Buchstabenpixel je Prüffeld
+let kern = null;        // 1 für jeden Pixel der Mittellinie
+let felder = null;      // Mittellinien-Pixel je Prüffeld
+const kernCanvas = document.createElement('canvas');
+kernCanvas.width = kernCanvas.height = GROESSE;
+const kctx = kernCanvas.getContext('2d', { willReadFrequently: true });
 const FELDER_PRO_ZEILE = Math.ceil(GROESSE / FELD);
 let malt = false;
 let fertig = false;
@@ -121,11 +126,26 @@ function zeichneVorlage() {
   vctx.fillText(z, x, y);
 
   const daten = vctx.getImageData(0, 0, GROESSE, GROESSE).data;
+  // Mittellinie: derselbe Buchstabe, aber der Rand wird mit einer dicken Umrisslinie weggeschnitten.
+  kctx.globalCompositeOperation = 'source-over';
+  kctx.clearRect(0, 0, GROESSE, GROESSE);
+  kctx.font = vctx.font;
+  kctx.textAlign = 'left';
+  kctx.textBaseline = 'alphabetic';
+  kctx.fillText(z, x, y);
+  kctx.globalCompositeOperation = 'destination-out';
+  kctx.lineWidth = 2 * KERN_RAND * 400 * faktor;
+  kctx.lineJoin = 'round';
+  kctx.strokeText(z, x, y);
+  const kernDaten = kctx.getImageData(0, 0, GROESSE, GROESSE).data;
+
   maske = new Uint8Array(GROESSE * GROESSE);
+  kern = new Uint8Array(GROESSE * GROESSE);
   felder = new Uint32Array(FELDER_PRO_ZEILE * FELDER_PRO_ZEILE);
   for (let i = 0; i < maske.length; i++) {
-    if (daten[i * 4 + 3] > 128) {
-      maske[i] = 1;
+    if (daten[i * 4 + 3] > 128) maske[i] = 1;
+    if (kernDaten[i * 4 + 3] > 128) {
+      kern[i] = 1;
       felder[feldVon(i)]++;
     }
   }
@@ -189,17 +209,15 @@ function pruefe() {
   let daneben = 0;
   for (let i = 0; i < maske.length; i++) {
     if (daten[i * 4 + 3] > 60) {
-      if (maske[i]) {
-        drin++;
-        bemalt[feldVon(i)]++;
-      } else {
-        daneben++;
-      }
+      if (maske[i]) drin++;
+      else daneben++;
+      if (kern[i]) bemalt[feldVon(i)]++;
     }
   }
   const anteilDaneben = daneben / Math.max(1, drin + daneben);
 
-  // Jedes Feld des Buchstabens muss übermalt sein – so fällt auch ein kurzer fehlender Strich auf.
+  // Jedes Feld der Mittellinie muss getroffen sein – so fällt auch ein kurzer fehlender Strich auf,
+  // ohne dass der Buchstabe in voller Breite ausgemalt werden muss.
   let gesamt = 0;
   let erledigt = 0;
   for (let f = 0; f < felder.length; f++) {
